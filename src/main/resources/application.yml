@@ -1,0 +1,8 @@
+---
+spring:
+  application:
+    name: car-dealer-be
+  datasource:
+    url: jdbc:mysql://localhost:3306/cardealer
+    username: ${DB_USER}
+    password: ${DB_PASS}
