@@ -1,8 +1,42 @@
 ---
 spring:
+  profiles: default
   application:
     name: car-dealer-be
+  liquibase:
+    enabled: false
+    change-log: classpath:db/changelog-master.yaml
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+---
+spring:
+  profiles: dev
   datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb
+    username: admin
+    password: admin
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+
+---
+spring:
+  profiles: prod
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/cardealer
     username: ${DB_USER}
     password: ${DB_PASS}
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5Dialect
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false

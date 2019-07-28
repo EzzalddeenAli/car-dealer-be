@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+    - file: changelogs/vehicle/vehicle_bootstrap.sql
+      relativeToChangelogFile: true
