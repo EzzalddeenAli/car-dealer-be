@@ -3,6 +3,7 @@ package com.spenceuk.cardealer.service;
 import static java.util.stream.Collectors.toList;
 
 import com.spenceuk.cardealer.api.dto.VehicleDto;
+import com.spenceuk.cardealer.api.exception.ApiException;
 import com.spenceuk.cardealer.dao.entity.Vehicle;
 import com.spenceuk.cardealer.dao.repo.VehicleRepo;
 
@@ -20,11 +21,11 @@ public class VehicleService {
   private final ModelMapper mapper;
 
   /**
-   * Return all vehicles in database.
+   * Finds all vehicles in the database.
    *
    * @return a List of all Vehicles.
    */
-  public List<Vehicle> allVehicles() {
+  private List<Vehicle> allVehicles() {
     return repo.findAll();
   }
 
@@ -51,4 +52,19 @@ public class VehicleService {
     return mapper.map(saved, VehicleDto.class);
   }
 
+  /**
+   * Updates all vehicle values, for use with PUT requests.
+   * @param updateDto new vehicle values.
+   */
+  public void updateAll(VehicleDto updateDto) {
+    var id = Long.valueOf(updateDto.getId());
+    if (id.longValue() <= 0) {
+      throw ApiException.noId();
+    }
+    if (!repo.existsById(id)) {
+      throw ApiException.idNotFound(id.longValue());
+    }
+
+    repo.save(mapper.map(updateDto, Vehicle.class));
+  }
 }

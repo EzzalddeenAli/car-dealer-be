@@ -1,16 +1,19 @@
 package com.spenceuk.cardealer.api.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import org.springframework.http.HttpStatus;
 
 public enum ApiExceptions {
-  MISSING_ID("Missing ID", BAD_REQUEST);
+  MISSING_ID(BAD_REQUEST, "Missing ID"),
+  ID_MISMATCH(BAD_REQUEST, "ID's do not match"),
+  ID_NOT_FOUND(NOT_FOUND, "Cannot find ID");
 
   private String msg;
   private HttpStatus status;
 
-  ApiExceptions(String msg, HttpStatus status) {
+  ApiExceptions(HttpStatus status, String msg) {
     this.msg = status.getReasonPhrase() + ": " + msg;
     this.status = status;
   }
