@@ -5,6 +5,9 @@ import com.spenceuk.cardealer.repo.VehicleRepo;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class VehicleService {
 
   private final VehicleRepo repo;

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping(path = "/api/vehicles")
 public class VehicleController {
-
   private final VehicleService service;
   private final ObjectMapper mapper;
 

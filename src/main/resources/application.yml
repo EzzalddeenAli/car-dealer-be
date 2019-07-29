@@ -8,8 +8,11 @@ spring:
     change-log: classpath:db/changelog-master.yaml
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
 
 ---
 spring:
@@ -23,8 +26,6 @@ spring:
     console:
       enabled: true
   jpa:
-    hibernate:
-      ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
     show-sql: true
 
@@ -39,6 +40,5 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL5Dialect
     show-sql: false
-    properties:
-      hibernate:
-        format_sql: false
+    hibernate:
+      ddl-auto: validate
