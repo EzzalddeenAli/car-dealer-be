@@ -30,7 +30,7 @@ public class Swagger {
     return new Docket(DocumentationType.SWAGGER_2)
         .groupName("Car Dealer API")
         .select()
-        .apis(RequestHandlerSelectors.basePackage("com.spenceuk.cardealer.controller"))
+        .apis(RequestHandlerSelectors.basePackage("com.spenceuk.cardealer.api.controller"))
         .build()
         .apiInfo(apiInfo())
         .directModelSubstitute(Timestamp.class, Long.class)

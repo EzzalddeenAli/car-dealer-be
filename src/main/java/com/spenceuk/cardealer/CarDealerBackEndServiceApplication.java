@@ -3,6 +3,9 @@ package com.spenceuk.cardealer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Car Dealer Backend Application.
+ */
 @SpringBootApplication
 public class CarDealerBackEndServiceApplication {
 

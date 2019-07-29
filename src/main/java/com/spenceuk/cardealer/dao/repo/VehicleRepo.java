@@ -1,6 +1,6 @@
-package com.spenceuk.cardealer.repo;
+package com.spenceuk.cardealer.dao.repo;
 
-import com.spenceuk.cardealer.entity.Vehicle;
+import com.spenceuk.cardealer.dao.entity.Vehicle;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,4 +1,4 @@
-package com.spenceuk.cardealer.entity;
+package com.spenceuk.cardealer.dao.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

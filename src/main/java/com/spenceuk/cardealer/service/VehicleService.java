@@ -1,33 +1,42 @@
 package com.spenceuk.cardealer.service;
 
-import com.spenceuk.cardealer.entity.Vehicle;
-import com.spenceuk.cardealer.repo.VehicleRepo;
+import static java.util.stream.Collectors.toList;
+
+import com.spenceuk.cardealer.api.dto.VehicleDto;
+import com.spenceuk.cardealer.dao.entity.Vehicle;
+import com.spenceuk.cardealer.dao.repo.VehicleRepo;
 
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class VehicleService {
-
   private final VehicleRepo repo;
-
-  /**
-   * Vehicle Service Constructor.
-   *
-   * @param repo Vehicle repository
-   */
-  public VehicleService(VehicleRepo repo) {
-    this.repo = repo;
-  }
+  private final ModelMapper mapper;
 
   /**
    * Return all vehicles in database.
    *
    * @return a List of all Vehicles.
    */
-  public List<Vehicle> getAllVehicles() {
+  public List<Vehicle> allVehicles() {
     return repo.findAll();
+  }
+
+  /**
+   * Returns all vehicles converted to VehicleDto Objects.
+   *
+   * @return List of VehicleDto Objects.
+   */
+  public List<VehicleDto> allVehiclesDto() {
+    return allVehicles().stream()
+      .map(vehicle -> mapper.map(vehicle, VehicleDto.class))
+          .collect(toList());
   }
 
   /**
@@ -36,8 +45,10 @@ public class VehicleService {
    * @param newVehicle A new Vehicle Object to save.
    * @return A copy of the new saved Vehicle.
    */
-  public Vehicle saveVehicle(Vehicle newVehicle) {
-    return repo.save(newVehicle);
+  public VehicleDto saveVehicle(VehicleDto newVehicle) {
+    var unsaved = mapper.map(newVehicle, Vehicle.class);
+    var saved = repo.save(unsaved);
+    return mapper.map(saved, VehicleDto.class);
   }
 
 }
