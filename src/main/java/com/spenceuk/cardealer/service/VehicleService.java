@@ -21,12 +21,15 @@ public class VehicleService {
   private final ModelMapper mapper;
 
   /**
-   * Finds all vehicles in the database.
+   * Returns a single vehicle by ID.
    *
-   * @return a List of all Vehicles.
+   * @return a Vehicle Object.
+   * @throws ApiException.class 404 NOT FOUND.
    */
-  private List<Vehicle> allVehicles() {
-    return repo.findAll();
+  public VehicleDto oneByID(Long id) {
+    var vehicle = repo.findById(id).orElseThrow(
+        () -> ApiException.idNotFound(id.longValue()));
+    return mapper.map(vehicle, VehicleDto.class);
   }
 
   /**
@@ -34,7 +37,7 @@ public class VehicleService {
    *
    * @return List of VehicleDto Objects.
    */
-  public List<VehicleDto> allVehiclesDto() {
+  public List<VehicleDto> all() {
     return allVehicles().stream()
       .map(vehicle -> mapper.map(vehicle, VehicleDto.class))
           .collect(toList());
@@ -46,7 +49,7 @@ public class VehicleService {
    * @param newVehicle A new Vehicle Object to save.
    * @return A copy of the new saved Vehicle.
    */
-  public VehicleDto saveVehicle(VehicleDto newVehicle) {
+  public VehicleDto save(VehicleDto newVehicle) {
     var unsaved = mapper.map(newVehicle, Vehicle.class);
     var saved = repo.save(unsaved);
     return mapper.map(saved, VehicleDto.class);
@@ -56,7 +59,7 @@ public class VehicleService {
    * Updates all vehicle values, for use with PUT requests.
    * @param updateDto new vehicle values.
    */
-  public void updateAll(VehicleDto updateDto) {
+  public void update(VehicleDto updateDto) {
     var id = Long.valueOf(updateDto.getId());
     if (id.longValue() <= 0) {
       throw ApiException.noId();
@@ -64,7 +67,29 @@ public class VehicleService {
     if (!repo.existsById(id)) {
       throw ApiException.idNotFound(id.longValue());
     }
-
     repo.save(mapper.map(updateDto, Vehicle.class));
   }
+
+  /**
+   * Delete vehicle by ID.
+   *
+   * @param id ID of vehicle to DELETE.
+   * @throws ApiException 404 NOT FOUND.
+   */
+  public void delete(Long id) {
+    if (!repo.existsById(id)) {
+      throw ApiException.idNotFound(id.longValue());
+    }
+    repo.deleteById(id);
+  }
+
+  /**
+   * Finds all vehicles in the database.
+   *
+   * @return a List of all Vehicles.
+   */
+  private List<Vehicle> allVehicles() {
+    return repo.findAll();
+  }
+
 }
