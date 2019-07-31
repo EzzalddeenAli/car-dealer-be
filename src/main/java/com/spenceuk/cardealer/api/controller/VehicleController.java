@@ -84,9 +84,9 @@ public class VehicleController {
    * @param id ID of the vehicle to DELETE.
    * @return 204 NO CONTENT.
    */
-  @DeleteMapping("{vehicelId}")
+  @DeleteMapping("{vehicleId}")
   ResponseEntity<Void> deleteVehicle(@PathVariable("vehicleId") Long id) {
-
+    service.delete(id);
     return ResponseEntity.status(NO_CONTENT).build();
   }
 }
