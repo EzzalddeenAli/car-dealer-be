@@ -4,11 +4,11 @@ spring:
   application:
     name: car-dealer-be
   liquibase:
-    enabled: false
+    enabled: true
     change-log: classpath:db/changelog-master.yaml
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     open-in-view: false
     properties:
       hibernate:
