@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `cardealer`.`vehicle` (
 -- -----------------------------------------------------
 
 USE `cardealer`;
-  INSERT INTO `cardealer`.`vehicle` (`registration`, `type`, `model`, `make`)
+  INSERT INTO `cardealer`.`vehicle` (`registration`, `type`, `make`, `model`)
   VALUES
     ('AAAAAA', 'car', 'Ford', 'Mustang'),
     ('BBBBBB', 'van', 'Ford', 'Transit'),
