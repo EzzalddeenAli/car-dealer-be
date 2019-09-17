@@ -32,11 +32,16 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+@ExtendWith(RestDocumentationExtension.class)
 public class VehicleControllerTests {
   private static final String BASE_URL = "/api/vehicles";
   private static final String VEH_URL = BASE_URL + "/{vehicleId}";
@@ -52,13 +57,14 @@ public class VehicleControllerTests {
    * VehicleControllerTests setup.
    */
   @BeforeEach
-  public void setup() {
+  public void setup(RestDocumentationContextProvider contextProvider) {
     initMocks(this);
     controller = new VehicleController(service);
     testVehicle = testVehicleDto(ONE);
     mapper = new ObjectMapper();
     mvc = MockMvcBuilders.standaloneSetup(controller)
         .setControllerAdvice(new GlobalExceptionHandler())
+        .apply(MockMvcRestDocumentation.documentationConfiguration(contextProvider))
         .build();
   }
 
@@ -162,7 +168,8 @@ public class VehicleControllerTests {
         .andExpect(jsonPath("$[0].id", is(1)))
         .andExpect(jsonPath("$[0].make", is("make")))
         .andExpect(jsonPath("$[0].model", is("model")))
-        .andExpect(jsonPath("$[0].registration", is("registration")));
+        .andExpect(jsonPath("$[0].registration", is("registration")))
+        .andDo(MockMvcRestDocumentation.document("GETVehicles"));
     then(service).should().all();
   }
 
