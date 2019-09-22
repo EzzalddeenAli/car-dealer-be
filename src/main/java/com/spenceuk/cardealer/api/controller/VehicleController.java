@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/api/vehicles")
-public class VehicleController {
+public class VehicleController implements Controller {
   private final VehicleService service;
 
   /**

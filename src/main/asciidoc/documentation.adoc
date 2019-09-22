@@ -1,0 +1,39 @@
+= Car Dealer
+
+Car Dealer API Documentation.
+
+NOTE: This documentation is a draft and liable to change.
+
+== Vehicle Operations
+
+Through the rest api you can create, read, update and delete vehicle objects using the following requests.
+
+=== Get all vehicles
+
+Returns all the vehicles.
+
+operation::get-vehicles[snippets='curl-request,http-request,http-response']
+
+=== Get Vehicle by id
+
+Returns a specific vehicle matching the supplied id.
+
+operation::get-vehicle-by-id[snippets='path-parameters,curl-request,http-request,http-response']
+
+=== Create a new vehicle
+
+Creates a new vehicle.
+
+operation::post-vehicle[snippets='request-body,curl-request,http-request,http-response']
+
+=== Update a vehicle
+
+Update the record for a specified vehicle.
+
+operation::put-vehicle[snippets='path-parameters,request-body,curl-request,http-request,http-response']
+
+=== Delete a vehicle
+
+Delete a specified vehicle.
+
+operation::delete-vehicle[snippets='path-parameters,curl-request,http-request,http-response']

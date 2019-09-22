@@ -12,6 +12,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spenceuk.cardealer.api.controller.VehicleController;
 import com.spenceuk.cardealer.api.dto.VehicleDto;
 import com.spenceuk.cardealer.api.exception.ApiException;
-import com.spenceuk.cardealer.config.GlobalExceptionHandler;
 import com.spenceuk.cardealer.service.VehicleService;
 
 import java.util.List;
@@ -37,9 +39,10 @@ import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.PathParametersSnippet;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(RestDocumentationExtension.class)
 public class VehicleControllerTests {
@@ -57,15 +60,12 @@ public class VehicleControllerTests {
    * VehicleControllerTests setup.
    */
   @BeforeEach
-  public void setup(RestDocumentationContextProvider contextProvider) {
+  public void setup(RestDocumentationContextProvider context) {
     initMocks(this);
     controller = new VehicleController(service);
     testVehicle = testVehicleDto(ONE);
     mapper = new ObjectMapper();
-    mvc = MockMvcBuilders.standaloneSetup(controller)
-        .setControllerAdvice(new GlobalExceptionHandler())
-        .apply(MockMvcRestDocumentation.documentationConfiguration(contextProvider))
-        .build();
+    mvc = MockMvcHelper.mvcWithRestDocs(controller, context);
   }
 
   /**
@@ -77,68 +77,33 @@ public class VehicleControllerTests {
   }
 
   @Test
-  @DisplayName("DELETE /api/vehicles/{id} throws ID NOT FOUND")
-  void deleteVehicleException() throws Exception {
-    doThrow(ApiException.idNotFound(ONE)).when(service).delete(anyLong());
-    mvc.perform(delete(VEH_URL, ONE))
-        .andExpect(status().isNotFound())
+  @DisplayName("GET /api/vehicles")
+  void vehiclesGet() throws Exception {
+    given(service.all()).willReturn(List.of(testVehicle));
+    mvc.perform(get(BASE_URL))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(1)))
+        .andExpect(jsonPath("$[0].id", is(1)))
+        .andExpect(jsonPath("$[0].make", is("make")))
+        .andExpect(jsonPath("$[0].model", is("model")))
+        .andExpect(jsonPath("$[0].registration", is("registration")))
+        .andDo(document("get-vehicles"));
+    then(service).should().all();
+  }
+
+  @Test
+  @DisplayName("GET /api/vehicles/{vehicleId}")
+  void vehicleById() throws Exception {
+    given(service.oneByID(ONE)).willReturn(testVehicle);
+    mvc.perform(RestDocumentationRequestBuilders.get(VEH_URL, ONE))
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$").isMap())
-        .andExpect(jsonPath("$.status", is(404)))
-        .andExpect(jsonPath("$.error", is("Not Found: Cannot find ID: 1")));
-    then(service).should().delete(anyLong());
-  }
-
-  @Test
-  @DisplayName("DELETE /api/vehicles/{id}")
-  void deleteVehicle() throws Exception {
-    doNothing().when(service).delete(anyLong());
-    mvc.perform(delete(VEH_URL, ONE))
-        .andExpect(status().isNoContent())
-        .andExpect(jsonPath("$").doesNotHaveJsonPath());
-    then(service).should().delete(anyLong());
-  }
-
-  @Test
-  @DisplayName("PUT /api/vehicles/[id} throws ID NOT FOUND")
-  void updateVehicleIdNotFound() throws Exception {
-    doThrow(ApiException.idNotFound(ONE)).when(service).update(any());
-    var body = testVehicleDto(ONE);
-    mvc.perform(put(VEH_URL, ONE)
-        .contentType(MediaType.APPLICATION_JSON_UTF8)
-        .content(mapper.writeValueAsString(body)))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$").isMap())
-        .andExpect(jsonPath("$.status", is(404)))
-        .andExpect(jsonPath("$.error", is("Not Found: Cannot find ID: 1")));
-    then(service).should().update(any());
-
-  }
-
-  @Test
-  @DisplayName("PUT /api/vehicles/[id} throws ID MIS MATCH")
-  void updateVehicleIdMismatch() throws Exception {
-    var body = testVehicleDto(2L);
-    mvc.perform(put(VEH_URL, ONE)
-        .contentType(MediaType.APPLICATION_JSON_UTF8)
-        .content(mapper.writeValueAsString(body)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$").isMap())
-        .andExpect(jsonPath("$.status", is(400)))
-        .andExpect(jsonPath("$.error",
-            is("Bad Request: ID's do not match: Path id: 1 != Object: id 2")));
-  }
-
-  @Test
-  @DisplayName("PUT /api/vehicles/[id}")
-  void updateVehicle() throws Exception {
-    doNothing().when(service).update(any(VehicleDto.class));
-    var body = testVehicleDto(ONE);
-    mvc.perform(put(VEH_URL, ONE)
-        .contentType(MediaType.APPLICATION_JSON_UTF8)
-        .content(mapper.writeValueAsString(body)))
-        .andExpect(status().isNoContent())
-        .andExpect(jsonPath("$").doesNotHaveJsonPath());
-    then(service).should().update(any(VehicleDto.class));
+        .andExpect(jsonPath("$.id", is(1)))
+        .andExpect(jsonPath("$.make", is("make")))
+        .andExpect(jsonPath("$.model", is("model")))
+        .andExpect(jsonPath("$.registration", is("registration")))
+        .andDo(document("get-vehicle-by-id", idSnippet()));
+    then(service).should().oneByID(ONE);
   }
 
   @Test
@@ -154,27 +119,79 @@ public class VehicleControllerTests {
         .andExpect(jsonPath("$.id", is(1)))
         .andExpect(jsonPath("$.make", is("make")))
         .andExpect(jsonPath("$.model", is("model")))
-        .andExpect(jsonPath("$.registration", is("registration")));
+        .andExpect(jsonPath("$.registration", is("registration")))
+        .andDo(document("post-vehicle"));
     then(service).should().save(any());
   }
 
   @Test
-  @DisplayName("GET /api/vehicles")
-  void vehiclesGet() throws Exception {
-    given(service.all()).willReturn(List.of(testVehicle));
-    mvc.perform(get(BASE_URL))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(1)))
-        .andExpect(jsonPath("$[0].id", is(1)))
-        .andExpect(jsonPath("$[0].make", is("make")))
-        .andExpect(jsonPath("$[0].model", is("model")))
-        .andExpect(jsonPath("$[0].registration", is("registration")))
-        .andDo(MockMvcRestDocumentation.document("GETVehicles"));
-    then(service).should().all();
+  @DisplayName("PUT /api/vehicles/{vehicleId}")
+  void updateVehicle() throws Exception {
+    doNothing().when(service).update(any(VehicleDto.class));
+    var body = testVehicleDto(ONE);
+    mvc.perform(RestDocumentationRequestBuilders.put(VEH_URL, ONE)
+        .contentType(MediaType.APPLICATION_JSON_UTF8)
+        .content(mapper.writeValueAsString(body)))
+        .andExpect(status().isNoContent())
+        .andExpect(jsonPath("$").doesNotHaveJsonPath())
+        .andDo(document("put-vehicle", idSnippet()));
+    then(service).should().update(any(VehicleDto.class));
   }
 
   @Test
-  @DisplayName("GET /api/vehicles/{id} throws ID NOT FOUND")
+  @DisplayName("DELETE /api/vehicles/{vehicleId}")
+  void deleteVehicle() throws Exception {
+    doNothing().when(service).delete(anyLong());
+    mvc.perform(RestDocumentationRequestBuilders.delete(VEH_URL, ONE))
+        .andExpect(status().isNoContent())
+        .andExpect(jsonPath("$").doesNotHaveJsonPath())
+        .andDo(document("delete-vehicle", idSnippet()));
+    then(service).should().delete(anyLong());
+  }
+
+  @Test
+  @DisplayName("DELETE /api/vehicles/{vehicleId} throws ID NOT FOUND")
+  void deleteVehicleException() throws Exception {
+    doThrow(ApiException.idNotFound(ONE)).when(service).delete(anyLong());
+    mvc.perform(delete(VEH_URL, ONE))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$").isMap())
+        .andExpect(jsonPath("$.status", is(404)))
+        .andExpect(jsonPath("$.error", is("Not Found: Cannot find ID: 1")));
+    then(service).should().delete(anyLong());
+  }
+
+  @Test
+  @DisplayName("PUT /api/vehicles/{vehicleId} throws ID NOT FOUND")
+  void updateVehicleIdNotFound() throws Exception {
+    doThrow(ApiException.idNotFound(ONE)).when(service).update(any());
+    var body = testVehicleDto(ONE);
+    mvc.perform(put(VEH_URL, ONE)
+        .contentType(MediaType.APPLICATION_JSON_UTF8)
+        .content(mapper.writeValueAsString(body)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$").isMap())
+        .andExpect(jsonPath("$.status", is(404)))
+        .andExpect(jsonPath("$.error", is("Not Found: Cannot find ID: 1")));
+    then(service).should().update(any());
+  }
+
+  @Test
+  @DisplayName("PUT /api/vehicles/{vehicleId} throws ID MIS MATCH")
+  void updateVehicleIdMismatch() throws Exception {
+    var body = testVehicleDto(2L);
+    mvc.perform(put(VEH_URL, ONE)
+        .contentType(MediaType.APPLICATION_JSON_UTF8)
+        .content(mapper.writeValueAsString(body)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$").isMap())
+        .andExpect(jsonPath("$.status", is(400)))
+        .andExpect(jsonPath("$.error",
+            is("Bad Request: ID's do not match: Path id: 1 != Object: id 2")));
+  }
+
+  @Test
+  @DisplayName("GET /api/vehicles/{vehicleId} throws ID NOT FOUND")
   void vehicleByIdNotFoundException() throws Exception {
     given(service.oneByID(ONE)).willThrow(ApiException.idNotFound(ONE));
     mvc.perform(get(VEH_URL, ONE))
@@ -185,20 +202,6 @@ public class VehicleControllerTests {
     then(service).should().oneByID(ONE);
   }
 
-  @Test
-  @DisplayName("GET /api/vehicles/{id}")
-  void vehicleById() throws Exception {
-    given(service.oneByID(ONE)).willReturn(testVehicle);
-    mvc.perform(get(VEH_URL, ONE))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isMap())
-        .andExpect(jsonPath("$.id", is(1)))
-        .andExpect(jsonPath("$.make", is("make")))
-        .andExpect(jsonPath("$.model", is("model")))
-        .andExpect(jsonPath("$.registration", is("registration")));
-    then(service).should().oneByID(ONE);
-  }
-
   private VehicleDto testVehicleDto(long id) {
     var vehicle = new VehicleDto();
     vehicle.setId(id);
@@ -206,5 +209,9 @@ public class VehicleControllerTests {
     vehicle.setModel("model");
     vehicle.setRegistration("registration");
     return vehicle;
+  }
+
+  private PathParametersSnippet idSnippet() {
+    return pathParameters(parameterWithName("vehicleId").description("ID number of the vehicle "));
   }
 }

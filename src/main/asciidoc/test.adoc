@@ -1,9 +1,0 @@
-= Generating Rest docs With Asciidoctor
-asciidoctor
-
-[abstract]
-This is the actual content.
-
-== First Section
-
-This is first section of the book.
